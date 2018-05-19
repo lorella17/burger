@@ -1,30 +1,44 @@
 // Import MySQL connection.
 var connection = require("../config/connection.js");
 
+connection.connect(function(err) {
+    if (err) {
+        console.error('error connecting: ' + err.stack);
+        return;
+    };
+    console.log('connected as id ' + connection.threadId);
+});
+
+
 var orm = {
-    selectAll: function(tableInput, cb) {
-        connection.query('SELECT * FROM '+ tableInput +';', function (err, result) {
+
+    selectAll: function(callback) {
+
+        connection.query('SELECT * FROM burgers', function (err, result) {
             if (err) throw err;
-            cb(result)
-
-        })
-    },
-
-
-    updateOne: function(tableinput, condition, cb) {
-        connection.query('UPDATE '+tableInput+'; SET devoured = true WHERE id = '+condition+'; ',
-            function (err, result) {
-                if (err) throw err;
-                cb(result);
-            })
+            callback(result);
+        });
 
     },
 
-    create: function (tableInput, val, cb) {
-        connection.query("INSERT INTO "+tableInput+" (burger_name) values ('"+val+"');" , function(err,result){
-            if(err)throw err;
-            cb(result);
-    })
+    insertOne: function(burger_name, callback){
+
+        connection.query('INSERT INTO burgers SET ?', {
+            burger_name: burger_name,
+            devoured: false
+        }, function (err, result) {
+            if (err) throw err;
+            callback(result);
+        });
+
+    },
+
+    updateOne: function(burgerID, callback){
+
+        connection.query('UPDATE burgers SET ? WHERE ?', [{devoured: true}, {id: burgerID}], function (err, result) {
+            if (err) throw err;
+            callback(result);
+        });
 
     }
 
